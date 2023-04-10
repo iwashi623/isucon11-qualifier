@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -182,6 +183,28 @@ type PostIsuConditionRequest struct {
 type JIAServiceRequest struct {
 	TargetBaseURL string `json:"target_base_url"`
 	IsuUUID       string `json:"isu_uuid"`
+}
+
+type Cache struct {
+	m     map[string]interface{}
+	mutex sync.Mutex
+}
+
+func (c *Cache) Set(key string, value interface{}) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.m[key] = value
+}
+
+func (c *Cache) Get(key string) (interface{}, bool) {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	value, found := c.m[key]
+	return value, found
+}
+
+var cache = Cache{
+	m: make(map[string]interface{}),
 }
 
 func getEnv(key string, defaultValue string) string {
@@ -1090,6 +1113,16 @@ func calculateConditionLevel(condition string) (string, error) {
 // GET /api/trend
 // ISUの性格毎の最新のコンディション情報
 func getTrend(c echo.Context) error {
+	rand.Seed(time.Now().UnixNano())
+	randomNumber := rand.Intn(10)
+	flag := randomNumber == 0
+	if flag {
+		v, found := cache.Get("trend")
+		if found {
+			return c.JSON(http.StatusOK, v)
+		}
+	}
+
 	characterList := []Isu{}
 	err := db.Select(&characterList, "SELECT `character` FROM `isu` GROUP BY `character`")
 	if err != nil {
@@ -1177,7 +1210,7 @@ func getTrend(c echo.Context) error {
 				Critical:  characterCriticalIsuConditions,
 			})
 	}
-
+	cache.Set("trend", res)
 	return c.JSON(http.StatusOK, res)
 }
 

@@ -1100,15 +1100,15 @@ func getTrend(c echo.Context) error {
 	res := []TrendResponse{}
 
 	query := "SELECT `isu`.`id` AS `isu_id`, `isu`.`jia_isu_uuid`, `isu`.`character`, `latest_isu_condition`.`timestamp` AS `timestamp`, `latest_isu_condition`.`condition` AS `condition`" +
-		" FROM `isu` LEFT JOIN (" +
-		" SELECT `ic`.* FROM `isu_condition` ic" +
-		" JOIN (" +
-		" SELECT `jia_isu_uuid`, MAX(`timestamp`) AS `max_timestamp`" +
-		" FROM `isu_condition` GROUP BY `jia_isu_uuid`" +
-		" ) `max_ic` ON `ic`.`jia_isu_uuid` = `max_ic`.`jia_isu_uuid`" +
-		" AND `ic`.`timestamp` = `max_ic`.`max_timestamp`" +
-		" ) `latest_isu_condition` ON `isu`.`jia_isu_uuid` = `latest_isu_condition`.`jia_isu_uuid`" +
-		" WHERE `isu`.`character` = ?"
+		"	FROM `isu` LEFT JOIN (" +
+		"	SELECT `ic`.* FROM `isu_condition` ic" +
+		"	JOIN (" +
+		"	SELECT `jia_isu_uuid`, MAX(`timestamp`) AS `max_timestamp`" +
+		"	FROM `isu_condition` GROUP BY `jia_isu_uuid`" +
+		"	) `max_ic` ON `ic`.`jia_isu_uuid` = `max_ic`.`jia_isu_uuid`" +
+		"	AND `ic`.`timestamp` = `max_ic`.`max_timestamp`" +
+		"	) `latest_isu_condition` ON `isu`.`jia_isu_uuid` = `latest_isu_condition`.`jia_isu_uuid`" +
+		"	WHERE `isu`.`character` = ?"
 
 	for _, character := range characterList {
 		isuWithLatestConditionList := []IsuWithLatestCondition{}

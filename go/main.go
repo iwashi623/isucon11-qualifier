@@ -1122,7 +1122,15 @@ func getTrend(c echo.Context) error {
 		characterWarningIsuConditions := []*TrendCondition{}
 		characterCriticalIsuConditions := []*TrendCondition{}
 		for _, isu := range isuWithLatestConditionList {
-			conditionLevel, err := calculateConditionLevel(isu.Condition)
+			var conditionString string
+			if isu.Condition.Valid {
+				conditionString = isu.Condition.String
+			} else {
+				// NULL条件の処理
+				conditionString = ""
+			}
+
+			conditionLevel, err := calculateConditionLevel(conditionString)
 			if err != nil {
 				c.Logger().Error(err)
 				return c.NoContent(http.StatusInternalServerError)

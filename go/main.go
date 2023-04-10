@@ -1099,7 +1099,7 @@ func getTrend(c echo.Context) error {
 
 	res := []TrendResponse{}
 
-	query := "SELECT `isu`.`id` AS `isu_id`, `isu`.`jia_isu_uuid`, `isu`.`character`, COALESCE(UNIX_TIMESTAMP(`latest_isu_condition`.`timestamp`) AS `timestamp`, 0), `latest_isu_condition`.`condition` AS `condition`" +
+	query := "SELECT `isu`.`id` AS `isu_id`, `isu`.`jia_isu_uuid`, `isu`.`character`, COALESCE(UNIX_TIMESTAMP(`latest_isu_condition`.`timestamp`), 0) AS `timestamp`, `latest_isu_condition`.`condition` AS `condition`" +
 		"	FROM `isu` LEFT JOIN (" +
 		"	SELECT `ic`.* FROM `isu_condition` ic" +
 		"	JOIN (" +

@@ -1099,16 +1099,27 @@ func getTrend(c echo.Context) error {
 
 	res := []TrendResponse{}
 
-	query := "SELECT `isu`.`id` AS `isu_id`, `isu`.`jia_isu_uuid`, `isu`.`character`, COALESCE(UNIX_TIMESTAMP(`latest_isu_condition`.`timestamp`), 0) AS `timestamp`, `latest_isu_condition`.`condition` AS `condition`" +
-		"	FROM `isu` LEFT JOIN (" +
-		"	SELECT `ic`.* FROM `isu_condition` ic" +
-		"	JOIN (" +
-		"	SELECT `jia_isu_uuid`, MAX(`timestamp`) AS `max_timestamp`" +
-		"	FROM `isu_condition` GROUP BY `jia_isu_uuid`" +
-		"	) `max_ic` ON `ic`.`jia_isu_uuid` = `max_ic`.`jia_isu_uuid`" +
-		"	AND `ic`.`timestamp` = `max_ic`.`max_timestamp`" +
-		"	) `latest_isu_condition` ON `isu`.`jia_isu_uuid` = `latest_isu_condition`.`jia_isu_uuid`" +
-		"	WHERE `isu`.`character` = ?"
+	query := "SELECT" +
+		"	`isu`.`id` AS `isu_id`," +
+		"	`isu`.`jia_isu_uuid`," +
+		"	`isu`.`character`," +
+		"	COALESCE(UNIX_TIMESTAMP(`latest_isu_condition`.`timestamp`), 0) AS `timestamp`," +
+		"	`latest_isu_condition`.`condition` AS `condition`" +
+		"	FROM" +
+		"	`isu`" +
+		"	LEFT JOIN (" +
+		"	SELECT *" +
+		"	FROM `isu_condition` AS `ic1`" +
+		"	WHERE `timestamp` = (" +
+		"	SELECT `ic2`.`timestamp`" +
+		"	FROM `isu_condition` AS `ic2`" +
+		"	WHERE `ic2`.`jia_isu_uuid` = `ic1`.`jia_isu_uuid`" +
+		"	ORDER BY `timestamp` DESC" +
+		"	LIMIT 1" +
+		"	)" +
+		"	) AS `latest_isu_condition` ON `isu`.`jia_isu_uuid` = `latest_isu_condition`.`jia_isu_uuid`" +
+		"	WHERE" +
+		"	`isu`.`character` = ?"
 
 	for _, character := range characterList {
 		isuWithLatestConditionList := []IsuWithLatestCondition{}

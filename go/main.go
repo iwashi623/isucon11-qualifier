@@ -1115,7 +1115,7 @@ func calculateConditionLevel(condition string) (string, error) {
 func getTrend(c echo.Context) error {
 	rand.Seed(time.Now().UnixNano())
 	randomNumber := rand.Intn(10)
-	flag := randomNumber == 0
+	flag := randomNumber != 0
 	if flag {
 		v, found := cache.Get("trend")
 		if found {

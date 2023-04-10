@@ -203,6 +203,12 @@ func (c *Cache) Get(key string) (interface{}, bool) {
 	return value, found
 }
 
+func (c *Cache) Clear() {
+	c.mutex.Lock()
+	defer c.mutex.Unlock()
+	c.m = make(map[string]interface{})
+}
+
 var cache = Cache{
 	m: make(map[string]interface{}),
 }
@@ -367,7 +373,7 @@ func postInitialize(c echo.Context) error {
 		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	cache.Set("trend", nil)
+	cache.Clear()
 
 	return c.JSON(http.StatusOK, InitializeResponse{
 		Language: "go",

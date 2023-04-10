@@ -97,11 +97,11 @@ type IsuTrend struct {
 }
 
 type IsuWithLatestCondition struct {
-	IsuID      int       `db:"isu_id"`
-	JIAIsuUUID string    `db:"jia_isu_uuid"`
-	Character  string    `db:"character"`
-	Timestamp  time.Time `db:"timestamp"`
-	Condition  string    `db:"condition"`
+	IsuID      int    `db:"isu_id"`
+	JIAIsuUUID string `db:"jia_isu_uuid"`
+	Character  string `db:"character"`
+	Timestamp  int64  `db:"timestamp"`
+	Condition  string `db:"condition"`
 }
 
 type MySQLConnectionEnv struct {
@@ -1099,7 +1099,7 @@ func getTrend(c echo.Context) error {
 
 	res := []TrendResponse{}
 
-	query := "SELECT `isu`.`id` AS `isu_id`, `isu`.`jia_isu_uuid`, `isu`.`character`, `latest_isu_condition`.`timestamp` AS `timestamp`, `latest_isu_condition`.`condition` AS `condition`" +
+	query := "SELECT `isu`.`id` AS `isu_id`, `isu`.`jia_isu_uuid`, `isu`.`character`, COALESCE(UNIX_TIMESTAMP(`latest_isu_condition`.`timestamp`), 0), `latest_isu_condition`.`condition` AS `condition`" +
 		"	FROM `isu` LEFT JOIN (" +
 		"	SELECT `ic`.* FROM `isu_condition` ic" +
 		"	JOIN (" +
@@ -1129,7 +1129,7 @@ func getTrend(c echo.Context) error {
 			}
 			trendCondition := TrendCondition{
 				ID:        isu.IsuID,
-				Timestamp: isu.Timestamp.Unix(),
+				Timestamp: isu.Timestamp,
 			}
 			switch conditionLevel {
 			case "info":
